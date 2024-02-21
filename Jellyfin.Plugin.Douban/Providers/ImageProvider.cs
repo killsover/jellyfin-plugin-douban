@@ -5,26 +5,27 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+
+using Microsoft.Extensions.Logging;
+
+using Jellyfin.Plugin.Douban.Clients;
+
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
 
-using Microsoft.Extensions.Logging;
-
-namespace Jellyfin.Plugin.Douban
+namespace Jellyfin.Plugin.Douban.Providers
 {
     public class ImageProvider : BaseProvider, IRemoteImageProvider, IHasOrder
     {
-        public string Name => "Douban Image Provider";
+        public string Name => "豆瓣刮削器";
         public int Order => 3;
 
         public ImageProvider(IHttpClientFactory httpClientFactory,
-                             IJsonSerializer jsonSerializer,
-                             ILogger<ImageProvider> logger) : base(httpClientFactory, jsonSerializer, logger)
+                             ILoggerFactory loggerFactory) : base(httpClientFactory, loggerFactory.CreateLogger<ImageProvider>())
         {
             // empty
         }
@@ -32,13 +33,13 @@ namespace Jellyfin.Plugin.Douban
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item,
             CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"[DOUBAN] GetImages for item: {item.Name}");
+            _logger.LogInformation("GetImages for item: {item.Name}", item.Name);
 
             var list = new List<RemoteImageInfo>();
             var sid = item.GetProviderId(ProviderID);
             if (string.IsNullOrWhiteSpace(sid))
             {
-                _logger.LogWarning($"[DOUBAN] Got images failed because the sid of \"{item.Name}\" is empty!");
+                _logger.LogWarning("Got images failed because the sid of #{item.Name}# is empty!", item.Name);
                 return list;
             }
 
@@ -70,8 +71,8 @@ namespace Jellyfin.Plugin.Douban
             CancellationToken cancellationToken)
         {
             var list = new List<RemoteImageInfo>();
-            var item = await _doubanClient.GetSubject(sid, Enum.Parse<MediaType>(type), cancellationToken);
-            list.Add(new RemoteImageInfo
+            var item = await _doubanClient.GetSubject(sid, Enum.Parse<DoubanType>(type), cancellationToken);
+            list.Add(new RemoteImageInfo()
             {
                 ProviderName = Name,
                 Url = item.Pic.Large,

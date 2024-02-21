@@ -3,24 +3,24 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+
+using Microsoft.Extensions.Logging;
+
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
-using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Plugin.Douban
+namespace Jellyfin.Plugin.Douban.Providers
 {
     public class MovieProvider : BaseProvider, IHasOrder,
         IRemoteMetadataProvider<Movie, MovieInfo>
     {
-        public string Name => "Douban Movie Provider";
+        public string Name => "豆瓣刮削器";
         public int Order => 3;
 
         public MovieProvider(IHttpClientFactory httpClientFactory,
-            IJsonSerializer jsonSerializer,
-            ILogger<MovieProvider> logger) : base(httpClientFactory, jsonSerializer, logger)
+            ILoggerFactory loggerFactory) : base(httpClientFactory, loggerFactory.CreateLogger<MovieProvider>())
         {
             // Empty
         }
@@ -28,7 +28,7 @@ namespace Jellyfin.Plugin.Douban
         public async Task<MetadataResult<Movie>> GetMetadata(MovieInfo info,
             CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"[DOUBAN] Getting metadata for \"{info.Name}\"");
+            _logger.LogInformation("Getting metadata for #{info.Name}#", info.Name);
 
             string sid = info.GetProviderId(ProviderID);
             if (string.IsNullOrWhiteSpace(sid))
@@ -39,14 +39,14 @@ namespace Jellyfin.Plugin.Douban
 
             if (string.IsNullOrWhiteSpace(sid))
             {
-                _logger.LogWarning($"[DOUBAN] No sid found for \"{info.Name}\"");
+                _logger.LogWarning("No sid found for #{info.Name}#", info.Name);
                 return new MetadataResult<Movie>();
             }
 
             var result = await GetMetadata<Movie>(sid, cancellationToken);
             if (result.HasMetadata)
             {
-                _logger.LogInformation($"[DOUBAN] Get the metadata of \"{info.Name}\" successfully!");
+                _logger.LogInformation("Get the metadata of #{info.Name}# successfully!", info.Name);
                 info.SetProviderId(ProviderID, sid);
             }
 

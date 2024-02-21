@@ -5,26 +5,26 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+
+using Microsoft.Extensions.Logging;
+
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
-using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Plugin.Douban
+namespace Jellyfin.Plugin.Douban.Providers
 {
     public class TVProvider : BaseProvider, IHasOrder,
         IRemoteMetadataProvider<Series, SeriesInfo>,
         IRemoteMetadataProvider<Season, SeasonInfo>,
         IRemoteMetadataProvider<Episode, EpisodeInfo>
     {
-        public string Name => "Douban TV Provider";
+        public string Name => "豆瓣刮削器";
         public int Order => 3;
 
         public TVProvider(IHttpClientFactory httpClientFactory,
-                          IJsonSerializer jsonSerializer,
-                          ILogger<TVProvider> logger) : base(httpClientFactory, jsonSerializer, logger)
+                          ILoggerFactory loggerFactory) : base(httpClientFactory, loggerFactory.CreateLogger<TVProvider>())
         {
             // empty
         }

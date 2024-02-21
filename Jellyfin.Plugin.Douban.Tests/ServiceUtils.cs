@@ -1,7 +1,6 @@
-﻿using Jellyfin.Plugin.Douban.Tests.Mock;
-using MediaBrowser.Model.Serialization;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+
 using Xunit.Abstractions;
 
 namespace Jellyfin.Plugin.Douban.Tests
@@ -12,8 +11,8 @@ namespace Jellyfin.Plugin.Douban.Tests
         {
             var services = new ServiceCollection()
                 .AddHttpClient()
-                .AddLogging(builder => builder.AddXUnit(output).SetMinimumLevel(LogLevel.Debug))
-                .AddSingleton<IJsonSerializer, MockJsonSerializer>()
+                //.AddLogging(builder => builder.AddXUnit(output).SetMinimumLevel(LogLevel.Debug))
+                .AddLogging(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Debug))
                 .AddSingleton<T>();
 
             var serviceProvider = services.BuildServiceProvider();
